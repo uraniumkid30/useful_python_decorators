@@ -1,0 +1,10 @@
+#!/Users/user/Desktop/python-decorators-project/env/bin/python3
+# PBR Generated from 'console_scripts'
+
+import sys
+
+from smiley.app import main
+
+
+if __name__ == "__main__":
+    sys.exit(main())

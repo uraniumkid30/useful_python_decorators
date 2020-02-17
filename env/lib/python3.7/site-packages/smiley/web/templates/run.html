@@ -1,0 +1,176 @@
+<%inherit file="run_base.html" />
+
+<%! from pprint import pformat %>
+<%! from smiley.presentation.syntax import syntax %>
+<%! from smiley.util import get_variable_changes %>
+
+<%def name="style()">
+<link href="/css/pygments.css" rel="stylesheet">
+<link href="/css/run.css" rel="stylesheet">
+</%def>
+
+<%def name="vartable(vars, show_none=True)" filter="syntax">
+% if vars is None:
+% if show_none:
+None
+% endif
+% else:
+% for n, v in sorted(vars.items()):
+${n} = ${pformat(v, width=20)}
+% endfor
+% endif
+</%def>
+
+<%def name="varchanges(vars)" filter="syntax">
+% for n, v in vars:
+${n} = ${pformat(v, width=15)}
+% endfor
+</%def>
+
+<%def name="page_link(page, per_page, thread_id=None)">
+% if thread_id is not None:
+/runs/${run_id}?page=${page}&per_page=${per_page}&thread_id=${thread_id}
+% else:
+/runs/${run_id}?page=${page}&per_page=${per_page}
+% endif
+</%def>
+
+<%def name="pagination(page, num_pages, per_page)">
+<ul class="pagination">
+% if page <= 1:
+  <li class="disabled"><a href="${page_link(1, per_page, thread_id)}">&laquo;</a></li>
+% else:
+  <li><a href="${page_link(page-1, per_page, thread_id)}">&laquo;</a></li>
+% endif
+% for r in page_ranges:
+% for p in range(r[0], r[1]+1):
+  <li
+% if p == page:
+ class="active"
+% endif
+><a href="${page_link(p, per_page, thread_id)}">${p}</a></li>
+% endfor
+% if len(page_ranges) > 1 and r != page_ranges[-1]:
+    <li class="disabled"><a>...</a></li>
+% endif
+% endfor
+% if page >= num_pages:
+  <li class="disabled"><a href="${page_link(num_pages, per_page, thread_id)}">&raquo;</a></li>
+% else:
+  <li><a href="${page_link(page+1, per_page, thread_id)}">&raquo;</a></li>
+% endif
+</ul>
+</%def>
+
+<div class="row">
+  <div class="col-md-6">
+    ${pagination(page, num_pages, per_page)}
+  </div>
+
+  <div class="col-md-6">
+    <form role="form">
+      <div class="form-group">
+        <label for="per-page-selector">Items Per Page</label>
+        <div id="per-page-selector" class="btn-group">
+          % for n in [5, 10, 20, 50, 100]:
+          <a
+             % if n == per_page:
+             class="btn btn-primary" 
+             % else:
+             class="btn btn-default" 
+             % endif
+             href="${page_link(1, n, thread_id)}">${n}</a>
+          % endfor
+        </div>
+      </div>
+
+% if len(thread_details) > 1:
+      <div class="form-group">
+        <label for="thread-filter">Filter on</label>
+        <span id="thread-filter" class="dropdown">
+          <button class="btn btn-default dropdown-toggle" type="button" id="thread-menu" data-toggle="dropdown">
+            % if thread_id is not None:
+            ${thread_id}
+            % else:
+            All Threads
+            % endif
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="thread-menu">
+            <li role="presentation"><a role="menuitem" href="${page_link(page, per_page, '')}">All Threads</a>
+              % for t in thread_details:
+            <li role="presentation"><a role="menuitem" href="${page_link(page, per_page, t.id)}">${t.id}</a></li>
+            % endfor
+          </ul>
+        </div>
+      </span>
+% endif
+
+  </div>
+
+</div>
+
+
+<div class="row">
+  <div id="content" class="col-md-12">
+    <table class="table table-striped table-condensed">
+      <thead>
+        <tr>
+          <th>Location</th>
+% if len(thread_details) > 1:
+          <th>Thread</th>
+% endif
+          <th>Event</th>
+          <th>Statement</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+<%
+older = {}
+%>
+% for t in trace:
+        <tr>
+          <td>
+            <a href="/runs/${run_id}/files/${getfileid(filename=t.filename)}">${t.filename|self.display_filename}</a>:
+% if t.line_no[0] == t.line_no[1]:
+          ${t.line_no[0]}
+% else:
+          ${t.line_no[0]} - ${t.line_no[1]}
+% endif
+          </td>
+
+% if len(thread_details) > 1:
+          <td>${t.thread_id}</td>
+% endif
+
+% if t.event == 'call' and t.func_name == '<module>':
+          <td>module</td>
+% else:
+          <td>${t.event}</td>
+% endif
+
+          <td class="run-source"><div class="highlight"><pre>${getlines(t.filename, t.line_no)}</pre></div></td>
+
+% if t.event == 'return':
+          <td>${pformat(t.trace_arg, width=20) | syntax}</td>
+% elif t.event == 'call':
+          <td></td>
+% elif not t.local_vars:
+          <td></td>
+% else:
+          <td>${varchanges(get_variable_changes(older, t.local_vars))}</td>
+<%
+older = t.local_vars or {}
+%>
+% endif
+
+        </tr>
+% endfor        
+      </tbody>
+    </table>
+
+    ${pagination(page, num_pages, per_page)}
+
+  </div>
+</div>

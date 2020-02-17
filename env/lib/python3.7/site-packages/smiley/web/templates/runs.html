@@ -1,0 +1,42 @@
+<%inherit file="layout.html" />
+
+<%block name="breadcrumbs">
+<li class="active">Runs</li>
+</%block>
+
+<div class="row">
+  <div id="content" class="col-md-12">
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Description</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Error Message</th>
+        </tr>
+      </thead>
+      <tbody>
+% for run in runs:
+% if run.error_message:
+        <tr class="error">
+% else:
+        <tr>
+% endif
+          <td><a href="/runs/${run.id}">${run.id}</a></td>
+          <td>${run.description}</td>
+          <td>${run.start_time}</td>
+          <td>${run.end_time}</td>
+% if run.error_message:
+          <td>${run.error_message}</td>
+% else:
+          <td></td>
+% endif
+        </tr>
+% endfor        
+      </tbody>
+    </table>
+
+  </div>
+</div>

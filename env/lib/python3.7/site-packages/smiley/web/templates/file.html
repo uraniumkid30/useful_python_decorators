@@ -1,0 +1,18 @@
+<%inherit file="layout.html" />
+
+<%def name="style()">
+<link href="/css/pygments.css" rel="stylesheet">
+</%def>
+
+<%block name="breadcrumbs">
+<li><a href="/runs">Runs</a></li>
+<li><a href="/runs/${run_id}">${run_id}</a></li>
+<li><a href="/runs/${run_id}/files">Files</a></li>
+<li class="active">${filename|self.display_filename}</li>
+</%block>
+
+<div class="row">
+  <div id="content" class="col-md-12">
+    ${styled_body}
+  </div>
+</div>
