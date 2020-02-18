@@ -45,7 +45,7 @@ class timer(object): # support for python 2
         """
         Parameters
         ----------
-        func : function object, optional
+        func : function object
             function to be decorated
         keep_record : bool, optional
             A flag used to keep overall time this function ran (default is
@@ -65,8 +65,6 @@ class timer(object): # support for python 2
             all positional arguments supplied to the function
         kwargs : objects, optional
             all key-word arguments supplied to the function
-        func : function object, optional
-            function to be decorated
 
         Returns
         -------
@@ -111,10 +109,51 @@ class timer(object): # support for python 2
 
 
 def timer_ver2(_func=None, *, keep_record=False):
+    """
+        Parameters
+        ----------
+        func : function object
+            function to be decorated
+        keep_record : bool, optional
+            A flag used to keep overall time this function ran (default is
+            False)
+        Returns
+        -------
+        decorated_inner_function :
+            a fully decorated function with a timed run
+    """
+
     def timer_proxy(func):
+        """
+        Parameters
+        ----------
+        func : function object
+            function to be decorated
+        keep_record : bool, optional
+            A flag used to keep overall time this function ran (default is
+            False)
+        Returns
+        -------
+        decorated_inner_function :
+            a fully decorated function with a timed run
+        """
 
         @functools.wraps(func)
         def timecounter(*args, **kwargs):
+            """
+            Gets called to decorate a function by timing how log it takes to run
+            Parameters
+            ----------
+            args : objects, optional
+                all positional arguments supplied to the function
+            kwargs : objects, optional
+                all key-word arguments supplied to the function
+
+            Returns
+            -------
+            decorated_function :
+                a fully decorated function with a timed run
+            """
             start_time = time.clock()
             result = func(*args, **kwargs)
             elapsed_time = time.clock() - start_time
