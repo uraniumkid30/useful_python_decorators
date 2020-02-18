@@ -5,7 +5,7 @@
             which serves as a decorator for both methods and
             functions
     
-    This scipt requires emoji be installed within python
+    This script requires emoji be installed within python
 '''
 import time
 import functools
@@ -16,8 +16,12 @@ class timer(object): # support for python 2
     """decorates a function, by wrapping the amount time it takes to 
         to run, to the function.
 
-    Parameters
+    Attributes
     ----------
+    alltime : int
+        total duration of all function calls
+    count : int
+        total no of all function calls
     func : function object
         function to be decorated with timing
     keep_record : bool, optional
@@ -41,21 +45,34 @@ class timer(object): # support for python 2
         """
         Parameters
         ----------
-        alltime : int
-            total duration of all function calls
-        count : int
-            total no of all function calls
         func : function object, optional
             function to be decorated
+        keep_record : bool, optional
+            A flag used to keep overall time this function ran (default is
+            False)
         """
         self.alltime = 0
         self.count = 0
         self.func = func  # function to be timed
         self.keep_record = keep_record
 
-    def __call__(self, *args, **kwargs) -> int:
-        """ this is called when used to
-            decorate an ordinary function """
+    def __call__(self, *args, **kwargs) :
+        """
+        Gets called to decorate a function by timing how log it takes to run
+        Parameters
+        ----------
+        args : objects, optional
+            all positional arguments supplied to the function
+        kwargs : objects, optional
+            all key-word arguments supplied to the function
+        func : function object, optional
+            function to be decorated
+
+        Returns
+        -------
+        decorated_function :
+            a fully decorated function with a timed run
+        """
         start_time = time.clock()
         result = self.func(*args, **kwargs)
         elapsed_time = time.clock() - start_time
@@ -74,8 +91,20 @@ class timer(object): # support for python 2
         return result  # self.func(*args, **kwargs)
 
     def __get__(self, instance, owner):
-        """ this is called when used to decorate a
-            methods attached to a class """
+        """
+        Gets called to decorate a function by timing hopw log it takes to run
+        Parameters
+        ----------
+        instance : object 
+            object of the class that made the call
+        owner : object
+            class or owner of the object that made the call
+
+        Returns
+        -------
+        descriptor_wrapper :
+            a wrapper that saves data  and identity of objects
+        """
         def wrapper(*args, **kwargs):
             return self(instance, *args, **kwargs)
         return wrapper
